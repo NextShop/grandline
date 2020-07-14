@@ -1,0 +1,22 @@
+syntax = "proto3";
+package nextshop_core;
+
+option java_multiple_files = true;
+option java_package = "vn.nextpay.multiacquirer";
+option java_generic_services = true;
+
+option go_package = ".;api";
+
+message Merchant {
+  string id = 1;
+  string name = 2;
+  string phone = 3;
+}
+
+message GetMerchantById {
+  string id = 1;
+}
+
+service MerchantService {
+  rpc get(GetMerchantById) returns (User) {};
+}

@@ -1,0 +1,2 @@
+import "../user.proto";
+import "../merchant.proto";

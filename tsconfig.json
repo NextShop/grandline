@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "noImplicitAny": true,
+    "declaration": true,
+    "pretty": true,
+    "preserveConstEnums": true,
+    "suppressImplicitAnyIndexErrors": false,
+    "noResolve": false,
+    "types": [
+      "node",
+      "reflect-metadata"
+    ],
+    "lib": ["es6"],
+    "sourceMap": true,
+    "target": "es6",
+    "baseUrl": "./",
+    "outDir": "./dist"
+  },
+  "exclude": [
+    "node_modules",
+    "test",
+    "./dist"
+  ]
+}
