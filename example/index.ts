@@ -1,20 +1,19 @@
-/* eslint-disable no-param-reassign */
-import Gateway from '../src/index';
+import GrandLine from '../src/index';
+import GrpcProvider from '../src/providers/grpc';
 
-Gateway.bootstrap(__dirname, async () => {
+GrandLine.bootstrap(__dirname, async () => {
   /**
    * Before Start Function
-   * This is the place to run anythings that application have to(or may be plan to) used
+   * This is the place to run anythings that application have to(or may be you plan to) use
    * such as:
    * - Connect to DB Servers
    * - Load proto files
    * - Load external configs from http endpoint
+   * - Dynamically register a handler/provider
+   * - Load grpc proto files
    * - Etc
    */
 
-  // Demo add a route directly from beforeStart hook
-  // Gateway.addRoute(({ Proxy }) => ({
-  //   path: '/api',
-  //   middlewares: [Proxy.middleware('http://localhost:9999/user')],
-  // }));
+  await GrandLine.make<GrpcProvider>('gRPC')
+    .loadProtos(GrandLine.config('grpc').PATH, GrandLine.config('grpc').init);
 });

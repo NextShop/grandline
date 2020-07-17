@@ -1,50 +1,51 @@
-import { RouteConfigFunction } from '../../src';
+import { inject, injectable } from 'inversify';
+import { RequestHandler } from 'express';
+import {
+  GLRouter, gRPCHandler, GLEndpoint,
+} from '../../src';
+import UserController from '../controllers/user';
 
-const userRoute: RouteConfigFunction = ({ gRPC }) => ({
-  path: '/user',
-  middlewares: [
-    (req, res, next) => {
-      req.headers['x-access-token'] = 'TOKEN';
+@injectable()
+export default class UserRoute implements GLRouter {
+  @inject('gRPCHandler')
+  private gRPC: gRPCHandler;
 
-      next();
-    },
-  ],
-  endpoints: [
-    // Demo data function and response function
-    {
-      method: 'GET',
-      path: '/',
-      handler: gRPC.handle('UserService.list', {
-        data: (grpcResponseData: any) => grpcResponseData.users,
-        // response(grpcResponseData: any, req: any, res: any) {
-        //   res.send('Just a joke!!!');
-        // },
-      }),
-    },
+  @inject('UserController')
+  private UserController: UserController;
 
-    // GRPC Handler as a Middleware
-    {
-      method: 'GET',
-      path: '/',
-      middlewares: [
-        gRPC.middleware('UserService.list', {
-          data(grpcData: any, req: any) {
-            (req.grpcData = grpcData.users);
-          },
+  public path = '/user';
+
+  middlewares(): RequestHandler[] {
+    return [
+      (req, res, next) => {
+        req.headers['x-access-token'] = 'TOKEN';
+        next();
+      },
+    ];
+  }
+
+  endpoints(): GLEndpoint[] {
+    return [
+      { method: 'GET', path: '/', handler: this.UserController.list() },
+      {
+        method: 'POST',
+        path: '/',
+        middlewares: [
+          this.gRPC.middleware('UserService.list', {
+            data(grpcData: any, req: any) {
+              (req.grpcData = grpcData.users);
+            },
+          }),
+        ],
+        handler: (req: any, res) => res.json(req.grpcData),
+      },
+      {
+        method: 'GET',
+        path: '/:id',
+        handler: this.gRPC.handle('UserService.getById', {
+          transform: (req: any) => ({ id: req.params.id }),
         }),
-      ],
-      handler: (req: any, res) => res.json(req.grpcData),
-    },
-
-    // Power of transform function
-    {
-      method: 'GET',
-      path: '/:id',
-      handler: gRPC.handle('UserService.getById', {
-        transform: (req: any) => ({ id: req.params.id }),
-      }),
-    },
-  ],
-});
-
-export default userRoute;
+      },
+    ];
+  }
+}

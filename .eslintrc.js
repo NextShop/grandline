@@ -6,6 +6,7 @@ module.exports = {
     "keyword-spacing" : "off",
     "no-use-before-define": ["error", { "variables": false }],
     "import/prefer-default-export": "off",
-    "class-methods-use-this": "off"
+    "class-methods-use-this": "off",
+    "no-await-in-loop": "off"
   }
 }

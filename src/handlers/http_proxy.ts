@@ -1,10 +1,10 @@
 import { injectable, inject } from 'inversify';
 import { RequestHandler } from 'express';
 import HttpProxyProvider from '../providers/http_proxy';
-import GatewayHandler from '../interfaces/utils/gateway_hander';
+import GLHandler from '../interfaces/utils/grandline_hander';
 
 @injectable()
-export default class HttpProxyHandler implements GatewayHandler {
+export default class HttpProxyHandler implements GLHandler {
   @inject('HttpProxy')
   private httpProxy: HttpProxyProvider;
 

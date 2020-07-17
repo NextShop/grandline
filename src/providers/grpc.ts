@@ -2,24 +2,19 @@ import { injectable, inject } from 'inversify';
 import grpc, { GrpcObject } from 'grpc';
 import { loadSync } from '@grpc/proto-loader';
 import winston from 'winston';
-import Config from './config';
 
 @injectable()
 export default class GrpcProvider {
   private GrpcServices: GrpcObject;
 
-  private services: {[name: string] : any};
+  private services: {[name: string] : any} = {};
 
-  constructor(
-    @inject('AppLogger') private logger: winston.Logger,
-    @inject('Config') private config: Config,
-  ) {
-    const GRPC_PATH = `${this.config.get('APP_ROOT')}/${this.config.get('grpc').PATH}`;
-    this.loadProtos(GRPC_PATH);
-  }
+  @inject('AppLogger') private logger: winston.Logger;
 
-  loadProtos(GRPC_PATH: string) {
-    const packageDefinition = loadSync(GRPC_PATH, {
+  @inject('APP_ROOT') private appRoot: string;
+
+  loadProtos(GRPC_PATH: string, init: (services: GrpcObject) => any) {
+    const packageDefinition = loadSync(`${this.appRoot}/${GRPC_PATH}`, {
       keepCase: true,
       longs: String,
       enums: String,
@@ -28,7 +23,11 @@ export default class GrpcProvider {
     });
 
     this.GrpcServices = grpc.loadPackageDefinition(packageDefinition);
-    this.services = this.config.get('grpc').init(this.GrpcServices);
+    this.services = init(this.GrpcServices);
+
+    Object.keys(this.services).forEach(
+      (serviceName) => this.logger.info(`GRPC ${serviceName} is loaded`),
+    );
   }
 
   getServices() {

@@ -1,11 +1,14 @@
 import winston, {
   format, transports,
 } from 'winston';
-import { SPLAT } from 'triple-beam';
-import { isObject, trimEnd } from 'lodash';
 import chalk from 'chalk';
 import stringify from 'json-stringify-safe';
 import { injectable } from 'inversify';
+
+function isObject(value: any) {
+  const type = typeof value;
+  return value != null && (type === 'object' || type === 'function');
+}
 
 const {
   combine, timestamp, colorize, label, printf, align, errors,
@@ -27,25 +30,14 @@ function formatObject(param: any) {
 }
 
 const all = format((info) => {
-  const splat = info[SPLAT] || [];
-
-  const isSplatTypeMessage = typeof info.message === 'string'
-    && (info.message.includes('%s') || info.message.includes('%d') || info.message.includes('%j'));
-  if (isSplatTypeMessage) {
-    return info;
-  }
-  let message = formatObject(info.message);
-  const rest = splat
-    .map(formatObject)
-    .join(' ');
-  message = trimEnd(`${message} ${rest}`);
+  const message = formatObject(info.message).trimRight();
   return { ...info, message };
 });
 
 @injectable()
 export default class Logger {
   static createModule(logModule: string) {
-    const logger = winston.createLogger({
+    return winston.createLogger({
       format: combine(
         errors({ stack: true }),
         format((info) => ({ ...info, level: info.level.toUpperCase() }))(),
@@ -58,7 +50,21 @@ export default class Logger {
       ),
       transports: [new transports.Console()],
     });
+  }
 
-    return logger;
+  createModule(logModule: string) {
+    return winston.createLogger({
+      format: combine(
+        errors({ stack: true }),
+        format((info) => ({ ...info, level: info.level.toUpperCase() }))(),
+        colorize(),
+        all(),
+        label({ label: 'version' }),
+        timestamp(),
+        align(),
+        printf((info) => `[${info.timestamp}] ${info.level}  ${chalk.blue(logModule.toUpperCase())}: ${info.message} ${info.stack ? (`\n${info.stack}`) : ''}`),
+      ),
+      transports: [new transports.Console()],
+    });
   }
 }

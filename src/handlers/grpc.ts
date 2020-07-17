@@ -1,22 +1,22 @@
 import { injectable, inject } from 'inversify';
 import { RequestHandler, Request, Response } from 'express';
-import GatewayHandler from '../interfaces/utils/gateway_hander';
+import GLHandler from '../interfaces/utils/grandline_hander';
 import GrpcProvider from '../providers/grpc';
 
 interface GrpcHandlerOptions {
-  transform: (req: Request) => void;
-  data: (grpcResponseData: any) => any;
-  error: (err: any, req: Request, res: Response) => void
-  response: (grpcResponseData: any, req: Request, res: Response) => void
+  transform?: (req: Request) => void;
+  data?: (grpcResponseData: any) => any;
+  error?: (err: any, req: Request, res: Response) => void
+  response?: (grpcResponseData: any, req: Request, res: Response) => void
 }
 
 interface GrpcMiddlewareOptions {
-  transform: (req: Request) => void;
-  data: (grpcResponseData: any, req: Request) => any;
+  transform?: (req: Request) => void;
+  data?: (grpcResponseData: any, req: Request) => any;
 }
 
 @injectable()
-export default class GrpcHandler implements GatewayHandler {
+export default class GrpcHandler implements GLHandler {
   @inject('gRPC')
   private grpc: GrpcProvider;
 

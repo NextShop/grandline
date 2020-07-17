@@ -2,31 +2,24 @@
 /* eslint-disable no-unused-expressions */
 import { Router as ExpressRouter, RequestHandler } from 'express';
 import { injectable } from 'inversify';
-import { RouteConfigFunction } from '../interfaces/utils/route_config';
-import GatewayHandler from '../interfaces/utils/gateway_hander';
-import RouteConfigs from '../interfaces/configs/route';
+import GLEndpoint from '../interfaces/utils/grandline_endpoint';
+import GLRouter from '../interfaces/utils/grandline_router';
 
 @injectable()
 export default class Router {
-  create(
-    routeConfigFn: RouteConfigFunction,
-    handlers: {[name: string]: GatewayHandler},
-  ): {router: ExpressRouter, path: string} {
+  create(route: GLRouter): ExpressRouter {
     const router = ExpressRouter();
-    const routeConfig = routeConfigFn(handlers);
-    this.registerEndpoints(router, routeConfig);
-    return { path: routeConfig.path, router };
+
+    if(route.middlewares) router.use(...route.middlewares());
+    if(route.endpoints) this.registerEndpoints(router, route.endpoints());
+
+    return router;
   }
 
-  async registerEndpoints(router: ExpressRouter, routeConfig: RouteConfigs) {
-    // Setup router level middlewares
-    routeConfig.middlewares
-      && routeConfig.middlewares.length > 0
-      && router.use(...routeConfig.middlewares);
+  async registerEndpoints(router: ExpressRouter, endpoints: GLEndpoint[]) {
+    if (endpoints.length === 0) return;
 
-    if (!routeConfig.endpoints) return;
-
-    for (const endpoint of routeConfig.endpoints) {
+    for (const endpoint of endpoints) {
       const funcs: RequestHandler[] = [];
 
       // Setup endpoint level custom middlewares

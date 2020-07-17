@@ -1,9 +1,9 @@
 import { injectable } from 'inversify';
 import { RequestHandler } from 'express';
-import GatewayHandler from '../interfaces/utils/gateway_hander';
+import GLHandler from '../interfaces/utils/grandline_hander';
 
 @injectable()
-export default class ExpressHandler implements GatewayHandler {
+export default class ExpressHandler implements GLHandler {
   handle(requestHandler: RequestHandler): RequestHandler {
     return requestHandler;
   }

@@ -2,9 +2,9 @@ import express, { Express, RequestHandler } from 'express';
 import { injectable, inject } from 'inversify';
 import Logger from './logger';
 import Router from './router';
-
+import GLRouter from '../interfaces/utils/grandline_router';
 import { RouteConfigFunction } from '../interfaces/utils/route_config';
-import GatewayHandler from '../interfaces/utils/gateway_hander';
+import GLHandler from '../interfaces/utils/grandline_hander';
 
 @injectable()
 export default class ExpressProvider {
@@ -21,12 +21,16 @@ export default class ExpressProvider {
     this.expressApp.use(path, router);
   }
 
-  add(routeConfigFn: RouteConfigFunction, handlers: {[name: string ] : GatewayHandler}) {
-    const expressModule = this.router.create(routeConfigFn, handlers);
+  // add(routeConfigFn: RouteConfigFunction, handlers: {[name: string ] : GLHandler}) {
+  //   const expressModule = this.router.create(routeConfigFn, handlers);
 
-    this.routers.push(expressModule.router);
+  //   this.routers.push(expressModule.router);
 
-    this.expressApp.use(expressModule.path, expressModule.router);
+  //   this.expressApp.use(expressModule.path, expressModule.router);
+  // }
+  add(route: GLRouter) {
+    const router = this.router.create(route);
+    this.expressApp.use(route.path, router);
   }
 
   listen(port: number) {

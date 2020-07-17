@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express';
-import EndpointConfigs from './endpoint';
+import EndpointConfigs from '../utils/grandline_endpoint';
 
 export default interface RouteConfigs {
   path: string,
