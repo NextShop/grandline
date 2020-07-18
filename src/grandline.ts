@@ -27,7 +27,7 @@ class GrandLine {
 
   private APP_ROOT: string;
 
-  private handlers: {[name: string]: GLHandler} = {};
+  private handlers: { [name: string]: GLHandler } = {};
 
   private logger: winston.Logger = Logger.createModule('GRANDLINE');
 
@@ -35,7 +35,7 @@ class GrandLine {
     this.ioc = iocContainer;
   }
 
-  async bootstrap(APP_ROOT: string, beforeStart?: () => Promise<void>) {
+  async bootstrap(APP_ROOT: string, beforeStart?: (express: ExpressProvider) => Promise<void>) {
     this.APP_ROOT = APP_ROOT;
     this.ioc.bind('APP_ROOT').toConstantValue(APP_ROOT);
 
@@ -64,9 +64,9 @@ class GrandLine {
     const express = this.make<ExpressProvider>('Express');
     routes.forEach((routeName) => express.add(this.make<GLRouter>(routeName)));
 
-    if(beforeStart) await beforeStart();
+    if (beforeStart) await beforeStart(express);
 
-    express.listen(this.config('port'));
+    // express.listen(this.config('port'));
   }
 
   _resolvePath(filePath: string) {
@@ -105,13 +105,13 @@ class GrandLine {
     this.ioc.bind(`${sName}${sName.endsWith(sSuffix) ? '' : sSuffix}`).to(ServiceClass).inSingletonScope();
   }
 
-  async _registerProviders(providers: {[name: string]: string | {path: string, scope?: 'normal' | 'singleton'}}) {
+  async _registerProviders(providers: { [name: string]: string | { path: string, scope?: 'normal' | 'singleton' } }) {
     for (const providerName of Object.keys(providers)) {
-      if(isObject(providers[providerName])) {
-        const provider = <{path: string, scope?: 'normal' | 'singleton'}>providers[providerName];
+      if (isObject(providers[providerName])) {
+        const provider = <{ path: string, scope?: 'normal' | 'singleton' }>providers[providerName];
         const file = this._resolvePath(provider.path);
 
-        if(!provider.scope || provider.scope === 'normal') {
+        if (!provider.scope || provider.scope === 'normal') {
           this._bind(providerName, file);
         } else {
           this._bindSingleton(providerName, file);
@@ -123,7 +123,7 @@ class GrandLine {
     }
   }
 
-  async _registerHandlers(handlers: {[name: string]: string}) {
+  async _registerHandlers(handlers: { [name: string]: string }) {
     for (const handlerKey of Object.keys(handlers)) {
       const file = this._resolvePath(<string>handlers[handlerKey]);
 
@@ -132,8 +132,8 @@ class GrandLine {
     }
   }
 
-  async _resgisterControllers(controllers: {[name: string]: string}) {
-    if(controllers) {
+  async _resgisterControllers(controllers: { [name: string]: string }) {
+    if (controllers) {
       for (const controllerKey of Object.keys(controllers)) {
         const file = this._resolvePath(<string>controllers[controllerKey]);
         await this._bind(`${controllerKey}`, file, 'Controller');
@@ -141,9 +141,9 @@ class GrandLine {
     }
   }
 
-  async _registerRoutes(routes: {[name: string]: any}) {
+  async _registerRoutes(routes: { [name: string]: any }) {
     const bindedRoutes = [];
-    if(routes) {
+    if (routes) {
       for (const routeKey of Object.keys(routes)) {
         const file = this._resolvePath(<string>routes[routeKey]);
         await this._bind(`${routeKey}`, file, 'Route');
@@ -164,7 +164,7 @@ class GrandLine {
   }
 
   config(name: string, value?: any) {
-    if(value) this.ioc.get<Config>('Config').set(name, value);
+    if (value) this.ioc.get<Config>('Config').set(name, value);
     return this.ioc.get<Config>('Config').get(name);
   }
 
@@ -175,7 +175,7 @@ class GrandLine {
     this.config('handlers')[name] = this.ioc.get(`Handler/${name}`);
   }
 
-  addRoute(routeConfigFn : RouteConfigFunction) {
+  addRoute(routeConfigFn: RouteConfigFunction) {
     this.make<Config>('Config')
       .get('Express')
       .add(routeConfigFn, this.config('handlers'));

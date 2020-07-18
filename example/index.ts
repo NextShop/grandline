@@ -1,7 +1,7 @@
-import GrandLine from '../src/index';
+import GrandLine, { ExpressProvider } from '../src/index';
 import GrpcProvider from '../src/providers/grpc';
 
-GrandLine.bootstrap(__dirname, async () => {
+GrandLine.bootstrap(__dirname, async (express: ExpressProvider) => {
   /**
    * Before Start Function
    * This is the place to run anythings that application have to(or may be you plan to) use
@@ -16,4 +16,6 @@ GrandLine.bootstrap(__dirname, async () => {
 
   await GrandLine.make<GrpcProvider>('gRPC')
     .loadProtos(GrandLine.config('grpc').PATH, GrandLine.config('grpc').init);
+
+  express.listen(GrandLine.config('port'));
 });
