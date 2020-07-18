@@ -18,7 +18,6 @@ const coreProviders: any = {
 };
 
 const coreHandlers: any = {
-  Express: '@core/handlers/express',
   gRPC: '@core/handlers/grpc',
   Proxy: '@core/handlers/http_proxy',
 };
@@ -44,7 +43,7 @@ class GrandLine {
     await this._resolveConfig();
 
     // Import all dependencies
-    await this._resolveProviders({
+    await this._registerProviders({
       ...coreProviders,
       ...this.ioc.get<Config>('Config').get('providers'),
     });
@@ -106,7 +105,7 @@ class GrandLine {
     this.ioc.bind(`${sName}${sName.endsWith(sSuffix) ? '' : sSuffix}`).to(ServiceClass).inSingletonScope();
   }
 
-  async _resolveProviders(providers: {[name: string]: string | {path: string, scope?: 'normal' | 'singleton'}}) {
+  async _registerProviders(providers: {[name: string]: string | {path: string, scope?: 'normal' | 'singleton'}}) {
     for (const providerName of Object.keys(providers)) {
       if(isObject(providers[providerName])) {
         const provider = <{path: string, scope?: 'normal' | 'singleton'}>providers[providerName];
